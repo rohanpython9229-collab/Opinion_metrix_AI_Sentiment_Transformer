@@ -46,4 +46,3 @@ def predict(request: ReviewRequest):
 
     # Return sentiment and confidence as JSON
     return result
-```
