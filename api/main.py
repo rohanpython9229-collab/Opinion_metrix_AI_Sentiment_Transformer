@@ -1,7 +1,10 @@
 # Import FastAPI to create our API application
 from fastapi import FastAPI
 
-# Import our trained model's prediction function
+# Import BaseModel for validating JSON request data
+from pydantic import BaseModel
+
+# Import our reusable sentiment prediction function
 from src.inference import predict_sentiment
 
 
@@ -11,6 +14,11 @@ app = FastAPI(
     description="API for sentiment analysis using OpinionAI DistilBERT",
     version="1.0.0"
 )
+
+
+# Define the structure of the incoming JSON request
+class ReviewRequest(BaseModel):
+    review: str
 
 
 # Root endpoint — checks whether the API is running
@@ -23,19 +31,19 @@ def root():
 
 # Sentiment prediction endpoint
 @app.post("/predict")
-def predict(review: str):
+def predict(request: ReviewRequest):
     """
-    Analyze the sentiment of a product review.
+    Predict the sentiment of a product review.
 
-    Args:
-        review: Product review text.
-
-    Returns:
-        Sentiment and confidence score.
+    Expected JSON:
+    {
+        "review": "This product is amazing!"
+    }
     """
 
-    # Use our reusable inference function
-    result = predict_sentiment(review)
+    # Send the review to our inference pipeline
+    result = predict_sentiment(request.review)
 
-    # Return the prediction as an API response
+    # Return sentiment and confidence as JSON
     return result
+```
