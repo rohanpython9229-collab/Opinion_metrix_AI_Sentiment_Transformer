@@ -27,11 +27,21 @@ def predict_sentiment(text: str) -> dict:
     """
     Predict the sentiment of a given review.
 
+    Args:
+        text (str): Input product review.
+
     Returns:
         dict: Predicted sentiment and confidence score.
     """
 
-    # Convert the input review into tokens that DistilBERT understands
+    # Validate the input
+    if not isinstance(text, str) or not text.strip():
+        raise ValueError("Review text cannot be empty.")
+
+    # Remove unnecessary spaces from the beginning and end
+    text = text.strip()
+
+    # Convert the review into tokens that DistilBERT understands
     inputs = tokenizer(
         text,
         return_tensors="pt",
@@ -53,10 +63,10 @@ def predict_sentiment(text: str) -> dict:
     # Get the confidence of the predicted class
     confidence = probabilities[0][predicted_class].item()
 
-    # Convert class ID (0/1/2) into the actual sentiment name
+    # Convert class ID (0/1/2) into the sentiment name
     sentiment = model.config.id2label[predicted_class]
 
     return {
         "sentiment": sentiment,
-        "confidence": confidence
+        "confidence": round(confidence, 4)
     }
