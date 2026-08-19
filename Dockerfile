@@ -38,6 +38,15 @@ EXPOSE 8501
 # FastAPI port
 EXPOSE 8000
 
-# Default command:
-# Start the Streamlit application
-CMD ["streamlit", "run", "app.py", "--server.address=0.0.0.0", "--server.port=8501"]
+COPY start.sh .
+
+CMD ["sh", "start.sh"]
+
+EXPOSE 8501
+EXPOSE 8000
+
+COPY start.sh .
+
+RUN chmod +x start.sh
+
+CMD ["./start.sh"]
