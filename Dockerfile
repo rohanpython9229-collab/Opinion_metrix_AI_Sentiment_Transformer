@@ -38,15 +38,11 @@ EXPOSE 8501
 # FastAPI port
 EXPOSE 8000
 
+# Copy startup script
 COPY start.sh .
 
-CMD ["sh", "start.sh"]
-
-EXPOSE 8501
-EXPOSE 8000
-
-COPY start.sh .
-
+# Make startup script executable
 RUN chmod +x start.sh
 
+# Start FastAPI + Streamlit
 CMD ["./start.sh"]
