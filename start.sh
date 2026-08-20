@@ -8,8 +8,6 @@ API_PID=$!
 
 echo "=== FastAPI PID: $API_PID ==="
 
-sleep 5
-
 echo "=== Starting Streamlit ==="
 
 exec streamlit run app.py \
