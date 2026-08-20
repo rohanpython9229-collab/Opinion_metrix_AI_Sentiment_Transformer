@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <!-- Set the character encoding -->
+    <meta charset="UTF-8">
+
+    <!-- Make the page responsive on different screen sizes -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Page title shown in the browser tab -->
+    <title>OpinionAI | Sentiment Analyzer</title>
+
+
+    <!-- =========================================================
+         PAGE STYLING
+         ========================================================= -->
+
+    <style>
+
+        /* Apply box sizing to all elements */
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Main page styling */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        /* Main content container */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Header section */
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        /* Main title */
+        .header h1 {
+            font-size: 48px;
+            margin: 0;
+        }
+
+        /* Subtitle */
+        .header p {
+            color: #6b7280;
+            font-size: 18px;
+        }
+
+        /* Two-column layout */
+        .layout {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 25px;
+        }
+
+        /* Card styling */
+        .card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        /* Review input box */
+        textarea {
+            width: 100%;
+            height: 220px;
+            resize: vertical;
+            padding: 15px;
+            font-size: 17px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        /* Review input focus effect */
+        textarea:focus {
+            border-color: #6366f1;
+        }
+
+        /* Example buttons layout */
+        .examples {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        /* Common button styling */
+        button {
+            border: none;
+            border-radius: 9px;
+            padding: 12px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        /* Example button styling */
+        .example-btn {
+            background: #eef2ff;
+        }
+
+        /* Example button hover effect */
+        .example-btn:hover {
+            background: #e0e7ff;
+        }
+
+        /* Analyze and Clear button layout */
+        .actions {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* Analyze button */
+        .analyze {
+            background: #4f46e5;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Clear button */
+        .clear {
+            background: #e5e7eb;
+        }
+
+        /* Disabled button styling */
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Result card */
+        .result {
+            min-height: 300px;
+        }
+
+        /* Sentiment result text */
+        .sentiment {
+            font-size: 38px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        /* Confidence progress bar */
+        .confidence-bar {
+            width: 100%;
+            height: 12px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        /* Filled part of confidence bar */
+        .confidence-fill {
+            height: 100%;
+            width: 0%;
+            background: #4f46e5;
+            transition: width 0.4s ease;
+        }
+
+        /* Confidence percentage text */
+        .confidence-text {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        /* Message box */
+        .message {
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 10px;
+        }
+
+        /* Positive result */
+        .positive {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        /* Negative result */
+        .negative {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Neutral result */
+        .neutral {
+            background: #e0f2fe;
+            color: #075985;
+        }
+
+        /* Error message */
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 35px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        /* Responsive layout for smaller screens */
+        @media (max-width: 800px) {
+
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .examples {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                grid-template-columns: 1fr;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<!-- =========================================================
+     MAIN PAGE CONTAINER
+     ========================================================= -->
+
+<div class="container">
+
+
+    <!-- =====================================================
+         HEADER
+         ===================================================== -->
+
+    <div class="header">
+
+        <h1>🤖 OpinionAI</h1>
+
+        <p>
+            AI-Powered Sentiment Analysis using Transformer Models
+        </p>
+
+    </div>
+
+
+    <!-- =====================================================
+         MAIN TWO-COLUMN LAYOUT
+         ===================================================== -->
+
+    <div class="layout">
+
+
+        <!-- =================================================
+             LEFT CARD — REVIEW INPUT
+             ================================================= -->
+
+        <div class="card">
+
+            <h2>💬 Analyze a Review</h2>
+
+
+            <!-- Review input area -->
+            <textarea
+                id="review"
+                placeholder="Example: This product is amazing and works perfectly!"
+            ></textarea>
+
+
+            <!-- Character counter -->
+            <p>
+                📝 Characters:
+                <span id="characterCount">0</span>
+            </p>
+
+
+            <!-- Example review section -->
+            <h3>✨ Try an Example</h3>
+
+
+            <div class="examples">
+
+
+                <!-- Positive example button -->
+                <button
+                    class="example-btn"
+                    onclick="setExample('positive')">
+
+                    😊 Positive
+
+                </button>
+
+
+                <!-- Neutral example button -->
+                <button
+                    class="example-btn"
+                    onclick="setExample('neutral')">
+
+                    😐 Neutral
+
+                </button>
+
+
+                <!-- Negative example button -->
+                <button
+                    class="example-btn"
+                    onclick="setExample('negative')">
+
+                    😞 Negative
+
+                </button>
+
+
+            </div>
+
+
+            <!-- Action buttons -->
+            <div class="actions">
+
+
+                <!-- Analyze button -->
+                <button
+                    id="analyzeButton"
+                    class="analyze"
+                    onclick="analyzeSentiment()">
+
+                    🔍 Analyze Sentiment
+
+                </button>
+
+
+                <!-- Clear button -->
+                <button
+                    class="clear"
+                    onclick="clearReview()">
+
+                    🗑️ Clear
+
+                </button>
+
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             RIGHT CARD — ANALYSIS RESULT
+             ================================================= -->
+
+        <div class="card result">
+
+            <h2>📊 Analysis Result</h2>
+
+
+            <!-- Default result shown before analysis -->
+            <div id="resultContent">
+
+                <h3>👋 Ready to analyze</h3>
+
+                <p>
+                    Enter a customer review on the left
+                    and click <b>Analyze Sentiment</b>.
+                </p>
+
+                <p>
+                    💡 You can also try one of the example reviews.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         FOOTER
+         ===================================================== -->
+
+    <div class="footer">
+
+        OpinionAI • DistilBERT • FastAPI • PostgreSQL • Aiven
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+     Handles user interaction and API requests
+     ========================================================= -->
+
+<script>
+
+
+/* Get the required HTML elements */
+const reviewInput = document.getElementById("review");
+
+const characterCount =
+    document.getElementById("characterCount");
+
+const resultContent =
+    document.getElementById("resultContent");
+
+const analyzeButton =
+    document.getElementById("analyzeButton");
+
+
+/* =========================================================
+   CHARACTER COUNTER
+   Updates the character count while typing
+   ========================================================= */
+
+reviewInput.addEventListener("input", function () {
+
+    characterCount.textContent =
+        reviewInput.value.length;
+
+});
+
+
+/* =========================================================
+   EXAMPLE REVIEWS
+   Loads a predefined review into the text area
+   ========================================================= */
+
+function setExample(type) {
+
+
+    /* Positive example */
+    if (type === "positive") {
+
+        reviewInput.value =
+            "This product is amazing and works perfectly!";
+
+    }
+
+
+    /* Neutral example */
+    else if (type === "neutral") {
+
+        reviewInput.value =
+            "The product is okay. It works as expected.";
+
+    }
+
+
+    /* Negative example */
+    else {
+
+        reviewInput.value =
+            "The product is terrible and stopped working.";
+
+    }
+
+
+    /* Update character count */
+    characterCount.textContent =
+        reviewInput.value.length;
+
+}
+
+
+/* =========================================================
+   CLEAR REVIEW
+   Clears the review and previous result
+   ========================================================= */
+
+function clearReview() {
+
+    /* Clear the review */
+    reviewInput.value = "";
+
+    /* Reset character count */
+    characterCount.textContent = "0";
+
+
+    /* Reset result area */
+    resultContent.innerHTML = `
+
+        <h3>👋 Ready to analyze</h3>
+
+        <p>
+            Enter a customer review on the left
+            and click <b>Analyze Sentiment</b>.
+        </p>
+
+        <p>
+            💡 You can also try one of the example reviews.
+        </p>
+
+    `;
+
+}
+
+
+/* =========================================================
+   ANALYZE SENTIMENT
+   Sends the review to FastAPI
+   ========================================================= */
+
+async function analyzeSentiment() {
+
+
+    /* Get review text */
+    const review =
+        reviewInput.value.trim();
+
+
+    /* Check if the review is empty */
+    if (!review) {
+
+        resultContent.innerHTML = `
+
+            <div class="message error">
+
+                ⚠️ Please enter a review before analyzing.
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    /* Disable button while API request is running */
+    analyzeButton.disabled = true;
+
+    analyzeButton.textContent =
+        "🤖 Analyzing...";
+
+
+    try {
+
+
+        /* ================================================
+           SEND REVIEW TO FASTAPI
+           The frontend and API use the same domain
+           ================================================ */
+
+        const response = await fetch("/predict", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                review: review
+            })
+
+        });
+
+
+        /* Convert API response to JSON */
+        const data =
+            await response.json();
+
+
+        /* Check for API errors */
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail ||
+                `API returned status ${response.status}`
+            );
+
+        }
+
+
+        /* Get sentiment from API response */
+        const sentiment =
+            String(
+                data.sentiment || "Unknown"
+            ).toUpperCase();
+
+
+        /* Get confidence from API response */
+        let confidence =
+            Number(
+                data.confidence || 0
+            );
+
+
+        /* Convert confidence from decimal to percentage */
+        if (confidence <= 1) {
+
+            confidence *= 100;
+
+        }
+
+
+        /* Default sentiment values */
+        let emoji = "🤖";
+
+        let message =
+            "Sentiment detected.";
+
+        let messageClass =
+            "neutral";
+
+
+        /* Positive sentiment */
+        if (sentiment === "POSITIVE") {
+
+            emoji = "😊";
+
+            message =
+                "🎉 Positive opinion detected!";
+
+            messageClass =
+                "positive";
+
+        }
+
+
+        /* Negative sentiment */
+        else if (sentiment === "NEGATIVE") {
+
+            emoji = "😞";
+
+            message =
+                "⚠️ Negative opinion detected!";
+
+            messageClass =
+                "negative";
+
+        }
+
+
+        /* Neutral sentiment */
+        else if (sentiment === "NEUTRAL") {
+
+            emoji = "😐";
+
+            message =
+                "ℹ️ Neutral opinion detected!";
+
+            messageClass =
+                "neutral";
+
+        }
+
+
+        /* =================================================
+           DISPLAY RESULT
+           ================================================= */
+
+        resultContent.innerHTML = `
+
+            <h3>🎯 Detected Sentiment</h3>
+
+            <div class="sentiment">
+
+                ${emoji} ${sentiment}
+
+            </div>
+
+            <hr>
+
+            <h3>🎯 Model Confidence</h3>
+
+
+            <!-- Confidence progress bar -->
+            <div class="confidence-bar">
+
+                <div
+                    class="confidence-fill"
+                    style="width: ${Math.min(confidence, 100)}%">
+
+                </div>
+
+            </div>
+
+
+            <!-- Confidence percentage -->
+            <div class="confidence-text">
+
+                ${confidence.toFixed(2)}%
+
+            </div>
+
+
+            <!-- Sentiment message -->
+            <div class="message ${messageClass}">
+
+                ${message}
+
+            </div>
+
+
+            <!-- Prediction details -->
+            <h3>🔎 Prediction Details</h3>
+
+            <p>
+                <b>Sentiment:</b>
+                ${sentiment}
+            </p>
+
+            <p>
+                <b>Confidence:</b>
+                ${confidence.toFixed(2)}%
+            </p>
+
+
+            <small>
+
+                ✓ Prediction generated by the
+                OpinionAI DistilBERT model.
+
+            </small>
+
+        `;
+
+
+    }
+
+
+    /* =====================================================
+       HANDLE API ERRORS
+       ===================================================== */
+
+    catch (error) {
+
+        resultContent.innerHTML = `
+
+            <div class="message error">
+
+                <b>FastAPI connection failed.</b>
+
+                <br><br>
+
+                ${error.message}
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* =====================================================
+       RESTORE ANALYZE BUTTON
+       ===================================================== */
+
+    finally {
+
+        analyzeButton.disabled = false;
+
+        analyzeButton.textContent =
+            "🔍 Analyze Sentiment";
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>

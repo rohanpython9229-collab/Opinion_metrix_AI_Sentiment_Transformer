@@ -1,15 +1,21 @@
-# Import FastAPI to create our API application
+# Import FastAPI to create the API
 from fastapi import FastAPI
 
-# Import BaseModel for validating JSON request data
+# Import FileResponse to serve the HTML frontend
+from fastapi.responses import FileResponse
+
+# Import BaseModel to validate request data
 from pydantic import BaseModel
 
-# Import our reusable sentiment prediction function
+# Import the sentiment prediction function
 from src.inference import predict_sentiment
 
-# Import database engine and database model
+# Import the database connection
 from src.database import engine
+
+# Import the database table model
 from src.models import ReviewPrediction
+
 
 # Create the FastAPI application
 app = FastAPI(
@@ -19,42 +25,41 @@ app = FastAPI(
 )
 
 
-# Define the structure of the incoming JSON request
+# Define the format of the review request
 class ReviewRequest(BaseModel):
     review: str
 
 
-# Root endpoint — checks whether the API is running
-@app.get("/")
-def root():
+# Open the frontend when the user visits the main URL
+@app.get("/", response_class=FileResponse)
+def frontend():
+    return FileResponse("frontend/index.html")
+
+
+# Check if the API is running
+@app.get("/health")
+def health():
     return {
-        "message": "OpinionAI Sentiment API is running!"
+        "status": "healthy",
+        "message": "OpinionAI API is running!"
     }
 
-# Sentiment prediction endpoint
+
+# Predict sentiment for a review
 @app.post("/predict")
 def predict(request: ReviewRequest):
-    """
-    Predict the sentiment of a product review
-    and save the prediction to PostgreSQL.
 
-    Expected JSON:
-    {
-        "review": "This product is amazing!"
-    }
-    """
-
-    # Send the review to our inference pipeline
+    # Get sentiment prediction from the model
     result = predict_sentiment(request.review)
 
-    # Create a database record using the prediction result
+    # Create a database record
     prediction_record = ReviewPrediction(
         review=request.review,
         sentiment=result["sentiment"],
         confidence=result["confidence"]
     )
 
-    # Save the prediction to PostgreSQL
+    # Save the review and prediction in PostgreSQL
     with engine.begin() as connection:
         connection.execute(
             ReviewPrediction.__table__.insert(),
@@ -65,6 +70,5 @@ def predict(request: ReviewRequest):
             }]
         )
 
-    # Return sentiment and confidence as JSON
+    # Return the prediction to the frontend
     return result
-

@@ -13,8 +13,6 @@ psycopg2-binary==2.9.12
 fastapi==0.141.1
 uvicorn==0.52.2
 pydantic==2.13.4
-
-streamlit==1.61.1
 requests==2.34.2
 
 datasets==5.0.1

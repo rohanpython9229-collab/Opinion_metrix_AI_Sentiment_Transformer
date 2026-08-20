@@ -2,15 +2,4 @@
 
 echo "=== OpinionAI START.SH STARTED ==="
 
-uvicorn api.main:app --host 0.0.0.0 --port 8000 &
-
-API_PID=$!
-
-echo "=== FastAPI PID: $API_PID ==="
-
-echo "=== Starting Streamlit ==="
-
-exec streamlit run app.py \
-  --server.address=0.0.0.0 \
-  --server.port=${PORT:-8501} \
-  --server.fileWatcherType=none
+uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8000}
