@@ -25,6 +25,13 @@ model = AutoModelForSequenceClassification.from_pretrained(
     low_cpu_mem_usage=True
 )
 
+# Convert supported model layers to INT8 to reduce memory usage
+model = torch.quantization.quantize_dynamic(
+    model,
+    {torch.nn.Linear},
+    dtype=torch.qint8
+)
+
 
 # Put the model into evaluation mode.
 # This disables training-specific behavior such as dropout.
