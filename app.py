@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import os
+import time
 
 
 # ============================================================
@@ -23,6 +24,7 @@ API_URL = os.getenv(
     "API_URL",
     "http://127.0.0.1:8000/predict"
 )
+
 
 # ============================================================
 # SESSION STATE INITIALIZATION
@@ -408,20 +410,37 @@ if should_analyze:
         try:
 
             # ------------------------------------------------
-            # Send request to FastAPI
+            # Send request to FastAPI with retry mechanism
             # ------------------------------------------------
 
             with st.spinner(
                 "🤖 OpinionAI is analyzing your review..."
             ):
 
-                response = requests.post(
-                    API_URL,
-                    json={
-                        "review": st.session_state.review
-                    },
-                    timeout=30
-                )
+                response = None
+
+                for attempt in range(12):
+
+                    try:
+
+                        response = requests.post(
+                            API_URL,
+                            json={
+                                "review": st.session_state.review
+                            },
+                            timeout=30
+                        )
+
+                        # Request reached FastAPI.
+                        # Stop retrying regardless of HTTP status.
+                        break
+
+                    except requests.exceptions.ConnectionError:
+
+                        if attempt == 11:
+                            raise
+
+                        time.sleep(5)
 
             # ------------------------------------------------
             # Successful response
@@ -455,7 +474,8 @@ if should_analyze:
             st.session_state.last_result = {
                 "error": (
                     "FastAPI connection failed.\n\n"
-                    "Please make sure Uvicorn is running."
+                    "The API could not be reached after "
+                    "multiple attempts. Please try again."
                 )
             }
 
@@ -697,4 +717,3 @@ st.markdown(
     '</div>',
     unsafe_allow_html=True
 )
-
